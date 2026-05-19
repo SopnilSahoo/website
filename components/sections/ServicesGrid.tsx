@@ -93,36 +93,158 @@ const cardVariants: Variants = {
   },
 };
 
-const headerVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
+// Scan line variants — controlled by parent whileHover
+const scanLineVariants: Variants = {
+  rest: { y: "-100%", opacity: 0 },
+  hover: {
+    y: "100%",
+    opacity: [0, 0.7, 0],
+    transition: { duration: 0.6, ease: "easeInOut" },
+  },
+};
+
+// Corner accent variants
+const cornerAccentVariants: Variants = {
+  rest: { opacity: 0 },
+  hover: { opacity: 1, transition: { duration: 0.2 } },
+};
+
+// Title words stagger
+const titleContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.1 },
+  },
+};
+
+const wordVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: EASE },
+    transition: { duration: 0.55, ease: EASE },
   },
 };
+
+// Animated underline
+const underlineVariants: Variants = {
+  hidden: { scaleX: 0, originX: 0 },
+  visible: {
+    scaleX: 1,
+    transition: { duration: 0.7, ease: EASE, delay: 0.45 },
+  },
+};
+
+function AnimatedTitle({
+  text,
+  isInView,
+}: {
+  text: string;
+  isInView: boolean;
+}) {
+  const words = text.split(" ");
+  // Find where "Full-Spectrum" starts (word 0) to place underline under first two words
+  return (
+    <div className="relative inline-block">
+      <motion.span
+        className="flex flex-wrap justify-center gap-x-[0.3em] gap-y-0"
+        variants={titleContainerVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        aria-label={text}
+      >
+        {words.map((word, i) => (
+          <motion.span
+            key={i}
+            variants={wordVariants}
+            className="inline-block"
+          >
+            {word}
+          </motion.span>
+        ))}
+      </motion.span>
+
+      {/* Animated underline under "Full-Spectrum Marketing" — full width */}
+      <motion.span
+        aria-hidden="true"
+        className="absolute -bottom-2 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#CC1414] via-[#e01616] to-[#CC1414]/40 origin-left"
+        variants={underlineVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+      />
+    </div>
+  );
+}
 
 function CoreServiceCard({ service }: { service: ServiceCard }) {
   const Icon = service.icon;
   return (
     <motion.div
       variants={cardVariants}
-      className="group relative flex flex-col gap-4 p-6 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default"
-      whileHover={{
-        y: -4,
-        borderColor: "rgba(204,20,20,0.5)",
-        boxShadow:
-          "0 0 0 1px rgba(204,20,20,0.3), 0 8px 32px rgba(204,20,20,0.12)",
-      }}
+      initial="rest"
+      whileHover="hover"
+      className="group relative flex flex-col gap-4 p-6 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default overflow-hidden"
+      animate="rest"
+      style={{ originX: 0.5, originY: 0.5 }}
+      // Lift + border glow
+      custom={undefined}
+      // We use variants for children; add whileHover props here too
       transition={{ duration: 0.2 }}
+      // Override: merge lift + box-shadow into the hover variant via style prop approach
     >
-      {/* Icon */}
-      <div className="inline-flex items-center justify-center w-11 h-11 rounded-lg bg-[#CC1414]/10 border border-[#CC1414]/20 text-[#CC1414] transition-colors duration-300 group-hover:bg-[#CC1414]/20">
-        <Icon size={22} strokeWidth={1.75} />
+      {/* Framer-motion hover for card lift + border glow */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 rounded-xl"
+        variants={{
+          rest: {
+            boxShadow: "0 0 0 0px rgba(204,20,20,0), 0 0px 0px rgba(204,20,20,0)",
+            borderColor: "rgba(255,255,255,0.06)",
+          },
+          hover: {
+            boxShadow:
+              "0 0 0 1px rgba(204,20,20,0.35), 0 8px 32px rgba(204,20,20,0.14)",
+            borderColor: "rgba(204,20,20,0.5)",
+          },
+        }}
+        transition={{ duration: 0.25 }}
+        style={{ border: "1px solid transparent", zIndex: 0 }}
+      />
+
+      {/* Corner accent — top-right triangle */}
+      <motion.div
+        aria-hidden="true"
+        variants={cornerAccentVariants}
+        className="pointer-events-none absolute top-0 right-0 w-5 h-5 z-10"
+        style={{
+          background: "#CC1414",
+          clipPath: "polygon(100% 0, 0 0, 100% 100%)",
+        }}
+      />
+
+      {/* Icon box with scan line */}
+      <div className="relative inline-flex items-center justify-center w-11 h-11 rounded-lg bg-[#CC1414]/10 border border-[#CC1414]/20 overflow-hidden flex-shrink-0">
+        {/* Icon — animates to brighter red on hover */}
+        <motion.div
+          variants={{
+            rest: { color: "#CC1414" },
+            hover: { color: "#ff2222" },
+          }}
+          transition={{ duration: 0.2 }}
+        >
+          <Icon size={22} strokeWidth={1.75} />
+        </motion.div>
+
+        {/* Scan line */}
+        <motion.div
+          aria-hidden="true"
+          variants={scanLineVariants}
+          className="pointer-events-none absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#CC1414] to-transparent"
+          style={{ top: 0 }}
+        />
       </div>
 
       {/* Text */}
-      <div className="flex flex-col gap-1.5">
+      <div className="relative flex flex-col gap-1.5 z-[1]">
         <h3 className="text-white font-semibold text-base leading-snug">
           {service.title}
         </h3>
@@ -133,19 +255,24 @@ function CoreServiceCard({ service }: { service: ServiceCard }) {
         )}
       </div>
 
-      {/* Subtle corner red glow on hover */}
-      <div
+      {/* Corner red glow */}
+      <motion.div
         aria-hidden="true"
-        className="pointer-events-none absolute top-0 right-0 w-24 h-24 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-tr-xl overflow-hidden"
+        variants={{
+          rest: { opacity: 0 },
+          hover: { opacity: 1 },
+        }}
+        transition={{ duration: 0.3 }}
+        className="pointer-events-none absolute top-0 right-0 w-24 h-24 rounded-tr-xl overflow-hidden"
       >
         <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at top right, rgba(204,20,20,0.14) 0%, transparent 70%)",
+              "radial-gradient(circle at top right, rgba(204,20,20,0.18) 0%, transparent 70%)",
           }}
         />
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -191,21 +318,31 @@ export default function ServicesGrid() {
       <div className="max-w-6xl mx-auto">
         {/* Section header */}
         <motion.div
-          variants={headerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           className="flex flex-col items-center text-center mb-16 md:mb-20"
         >
-          <span className="text-[#CC1414] text-xs font-semibold uppercase tracking-[0.2em] mb-4">
+          <motion.span
+            variants={wordVariants}
+            className="text-[#CC1414] text-xs font-semibold uppercase tracking-[0.2em] mb-4"
+          >
             What We Do
-          </span>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
-            Full-Spectrum Marketing
+          </motion.span>
+
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-5 pb-3">
+            <AnimatedTitle text="Full-Spectrum Marketing" isInView={isInView} />
           </h2>
-          <p className="text-white/45 text-lg max-w-xl leading-relaxed">
+
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 16 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE, delay: 0.35 } },
+            }}
+            className="text-white/45 text-lg max-w-xl leading-relaxed"
+          >
             From viral social campaigns to AI-driven strategy — every channel,
             every platform, fully covered.
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Core services grid — 3 columns on desktop */}
@@ -222,9 +359,9 @@ export default function ServicesGrid() {
 
         {/* Other services divider label */}
         <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          initial={{ opacity: 0, y: 12 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
           className="flex items-center gap-4 mb-6"
         >
           <div className="h-px flex-1 bg-white/[0.06]" />

@@ -56,3 +56,94 @@ body {
 
 .red-glow { box-shadow: 0 0 40px rgba(204, 20, 20, 0.25); }
 .card-border { border: 1px solid rgba(255,255,255,0.06); }
+
+/* ─── Keyframe Animations ─────────────────────────────────────────────────── */
+
+/* Animated gradient border */
+@keyframes borderRotate {
+  from { --border-angle: 0deg; }
+  to { --border-angle: 360deg; }
+}
+
+/* Scan line sweep */
+@keyframes scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(400%); opacity: 0; }
+}
+
+/* Pulse ring */
+@keyframes pulseRing {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Shimmer / loading shine */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Float up-down */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Blink cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Data stream line */
+@keyframes dataStream {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+
+/* Glow pulse */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(204,20,20,0.3); }
+  50% { box-shadow: 0 0 40px rgba(204,20,20,0.6), 0 0 80px rgba(204,20,20,0.2); }
+}
+
+/* ─── Animation Utility Classes ───────────────────────────────────────────── */
+
+.animate-scanline { animation: scanline 2.5s ease-in-out infinite; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-pulse-ring { animation: pulseRing 2s ease-out infinite; }
+.animate-glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
+.animate-data-stream { animation: dataStream 3s linear infinite; }
+
+.text-shimmer {
+  background: linear-gradient(90deg, #ffffff 0%, #CC1414 40%, #ffffff 60%, #CC1414 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+.card-hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+.card-hover-glow:hover {
+  box-shadow: 0 0 30px rgba(204,20,20,0.15), 0 0 60px rgba(204,20,20,0.05);
+}
+
+.btn-glow-pulse {
+  position: relative;
+}
+.btn-glow-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: rgba(204,20,20,0.4);
+  animation: pulseRing 2s ease-out infinite;
+  z-index: -1;
+}
