@@ -72,24 +72,13 @@ const otherServices: ServiceCard[] = [
   { icon: Film, title: "Cinema Hall Ads" },
 ];
 
-const containerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 48, scale: 0.96 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.55,
-      ease: EASE,
-    },
+    scale: 1,
+    transition: { duration: 0.55, ease: EASE },
   },
 };
 
@@ -176,21 +165,20 @@ function AnimatedTitle({
   );
 }
 
-function CoreServiceCard({ service }: { service: ServiceCard }) {
+function CoreServiceCard({ service, index }: { service: ServiceCard; index: number }) {
   const Icon = service.icon;
   return (
     <motion.div
       variants={cardVariants}
-      initial="rest"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "0px 0px -80px 0px" }}
       whileHover="hover"
-      className="group relative flex flex-col gap-4 p-6 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default overflow-hidden"
       animate="rest"
+      custom={index}
+      transition={{ duration: 0.55, ease: EASE, delay: (index % 3) * 0.1 }}
+      className="group relative flex flex-col gap-4 p-6 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default overflow-hidden"
       style={{ originX: 0.5, originY: 0.5 }}
-      // Lift + border glow
-      custom={undefined}
-      // We use variants for children; add whileHover props here too
-      transition={{ duration: 0.2 }}
-      // Override: merge lift + box-shadow into the hover variant via style prop approach
     >
       {/* Framer-motion hover for card lift + border glow */}
       <motion.div
@@ -277,18 +265,21 @@ function CoreServiceCard({ service }: { service: ServiceCard }) {
   );
 }
 
-function OtherServiceCard({ service }: { service: ServiceCard }) {
+function OtherServiceCard({ service, index }: { service: ServiceCard; index: number }) {
   const Icon = service.icon;
   return (
     <motion.div
       variants={cardVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "0px 0px -60px 0px" }}
+      transition={{ duration: 0.5, ease: EASE, delay: index * 0.08 }}
       className="group flex items-center gap-3 px-5 py-4 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default"
       whileHover={{
         borderColor: "rgba(204,20,20,0.4)",
-        boxShadow:
-          "0 0 0 1px rgba(204,20,20,0.2), 0 4px 16px rgba(204,20,20,0.08)",
+        boxShadow: "0 0 0 1px rgba(204,20,20,0.2), 0 4px 16px rgba(204,20,20,0.08)",
+        y: -3,
       }}
-      transition={{ duration: 0.2 }}
     >
       <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-[#CC1414]/10 border border-[#CC1414]/20 text-[#CC1414] transition-colors duration-300 group-hover:bg-[#CC1414]/20 flex-shrink-0">
         <Icon size={18} strokeWidth={1.75} />
@@ -346,16 +337,11 @@ export default function ServicesGrid() {
         </motion.div>
 
         {/* Core services grid — 3 columns on desktop */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"
-        >
-          {coreServices.map((service) => (
-            <CoreServiceCard key={service.title} service={service} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+          {coreServices.map((service, i) => (
+            <CoreServiceCard key={service.title} service={service} index={i} />
           ))}
-        </motion.div>
+        </div>
 
         {/* Other services divider label */}
         <motion.div
@@ -372,16 +358,11 @@ export default function ServicesGrid() {
         </motion.div>
 
         {/* Other services row — up to 5 columns on large screens */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"
-        >
-          {otherServices.map((service) => (
-            <OtherServiceCard key={service.title} service={service} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {otherServices.map((service, i) => (
+            <OtherServiceCard key={service.title} service={service} index={i} />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
