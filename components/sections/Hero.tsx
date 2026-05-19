@@ -84,31 +84,31 @@ export default function Hero() {
         style={{
           zIndex: 1,
           background:
-            "radial-gradient(ellipse 80% 55% at 50% -10%, rgba(204,20,20,0.26) 0%, transparent 70%)",
+            "radial-gradient(ellipse 120% 60% at 50% -5%, rgba(204,20,20,0.32) 0%, transparent 70%)",
         }}
       />
 
       {/* ── Background layer 4: Dot grid overlay ── */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.045]"
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
         style={{
           zIndex: 2,
           backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.75) 1px, transparent 1px)",
-          backgroundSize: "36px 36px",
+            "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
         }}
       />
 
-      {/* ── Background layer 5: Edge vignette + bottom fade ── */}
+      {/* ── Background layer 5: Soft edge vignette + bottom fade (lighter on mobile) ── */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
         style={{
           zIndex: 3,
           background: [
-            "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 35%, #0a0a0a 100%)",
-            "linear-gradient(to bottom, transparent 60%, #0a0a0a 100%)",
+            "radial-gradient(ellipse 110% 90% at 50% 50%, transparent 45%, #0a0a0a 100%)",
+            "linear-gradient(to bottom, transparent 65%, #0a0a0a 100%)",
           ].join(", "),
         }}
       />
@@ -233,21 +233,21 @@ export default function Hero() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="flex flex-wrap items-center justify-center gap-3"
+          className="grid grid-cols-3 w-full max-w-sm sm:max-w-none sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-3"
         >
           {METRICS.map(({ stat, label }) => (
             <div
               key={label}
-              className="flex flex-col items-center rounded-xl px-5 py-3"
+              className="flex flex-col items-center rounded-xl px-3 sm:px-5 py-3"
               style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.12)",
               }}
             >
-              <span className="text-white font-bold text-lg leading-tight tabular-nums">
+              <span className="text-white font-bold text-base sm:text-lg leading-tight tabular-nums">
                 {stat}
               </span>
-              <span className="text-white/35 text-xs mt-0.5 whitespace-nowrap">
+              <span className="text-white/45 text-[10px] sm:text-xs mt-0.5 text-center">
                 {label}
               </span>
             </div>

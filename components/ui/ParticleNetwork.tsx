@@ -19,20 +19,35 @@ interface ParticleNetworkProps {
   className?: string;
 }
 
-const PARTICLE_COUNT = 80;
-const CONNECTION_DIST = 150;
-const REPEL_DIST = 120;
-const REPEL_FORCE = 0.35;
-const PULSE_INTERVAL_MS = 4000;
+const PULSE_INTERVAL_MS = 3000;
 
-function createParticle(width: number, height: number): Particle {
+function isMobile(width: number) { return width < 768; }
+
+function getConfig(width: number) {
+  const mobile = isMobile(width);
+  return {
+    PARTICLE_COUNT:  mobile ? 55  : 80,
+    CONNECTION_DIST: mobile ? 130 : 150,
+    REPEL_DIST:      mobile ? 120 : 120,
+    REPEL_FORCE:     0.35,
+    // More visible on mobile
+    PARTICLE_SIZE_MIN:   mobile ? 1.8  : 1.0,
+    PARTICLE_SIZE_RANGE: mobile ? 2.2  : 1.5,
+    RED_RATIO:           mobile ? 0.28 : 0.18,
+    LINE_WHITE_OPACITY:  mobile ? 0.20 : 0.08,
+    LINE_RED_OPACITY:    mobile ? 0.35 : 0.15,
+    LINE_WIDTH:          mobile ? 1.0  : 0.8,
+  };
+}
+
+function createParticle(width: number, height: number, cfg: ReturnType<typeof getConfig>): Particle {
   return {
     x: Math.random() * width,
     y: Math.random() * height,
     vx: (Math.random() - 0.5) * 0.4,
     vy: (Math.random() - 0.5) * 0.4,
-    size: 1 + Math.random() * 1.5,
-    isRed: Math.random() < 0.18,
+    size: cfg.PARTICLE_SIZE_MIN + Math.random() * cfg.PARTICLE_SIZE_RANGE,
+    isRed: Math.random() < cfg.RED_RATIO,
     pulseRadius: 0,
     pulseAlpha: 0,
     pulsing: false,
@@ -76,8 +91,9 @@ export default function ParticleNetwork({ className = "" }: ParticleNetworkProps
 
     // Initialise particles
     resize();
-    particlesRef.current = Array.from({ length: PARTICLE_COUNT }, () =>
-      createParticle(canvas.width, canvas.height)
+    const cfg = getConfig(canvas.width);
+    particlesRef.current = Array.from({ length: cfg.PARTICLE_COUNT }, () =>
+      createParticle(canvas.width, canvas.height, cfg)
     );
 
     const ro = new ResizeObserver(() => {
@@ -129,12 +145,13 @@ export default function ParticleNetwork({ className = "" }: ParticleNetworkProps
         const p = particles[i];
 
         // Mouse repulsion
+        const cfg2 = getConfig(w);
         if (mouse) {
           const dx = p.x - mouse.x;
           const dy = p.y - mouse.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < REPEL_DIST && dist > 0) {
-            const force = (1 - dist / REPEL_DIST) * REPEL_FORCE;
+          if (dist < cfg2.REPEL_DIST && dist > 0) {
+            const force = (1 - dist / cfg2.REPEL_DIST) * cfg2.REPEL_FORCE;
             p.vx += (dx / dist) * force;
             p.vy += (dy / dist) * force;
           }
@@ -194,6 +211,7 @@ export default function ParticleNetwork({ className = "" }: ParticleNetworkProps
       }
 
       // Draw connections
+      const cfg3 = getConfig(w);
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const a = particles[i];
@@ -202,14 +220,14 @@ export default function ParticleNetwork({ className = "" }: ParticleNetworkProps
           const dy = a.y - b.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < CONNECTION_DIST) {
-            const opacity = 1 - dist / CONNECTION_DIST;
+          if (dist < cfg3.CONNECTION_DIST) {
+            const opacity = 1 - dist / cfg3.CONNECTION_DIST;
             if (a.isRed || b.isRed) {
-              ctx.strokeStyle = `rgba(204,20,20,${(opacity * 0.15).toFixed(3)})`;
+              ctx.strokeStyle = `rgba(204,20,20,${(opacity * cfg3.LINE_RED_OPACITY).toFixed(3)})`;
             } else {
-              ctx.strokeStyle = `rgba(255,255,255,${(opacity * 0.08).toFixed(3)})`;
+              ctx.strokeStyle = `rgba(255,255,255,${(opacity * cfg3.LINE_WHITE_OPACITY).toFixed(3)})`;
             }
-            ctx.lineWidth = 0.8;
+            ctx.lineWidth = cfg3.LINE_WIDTH;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
