@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useMotionTemplate } from "framer-motion";
+import { use3DTilt } from "@/hooks/use3DTilt";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -57,22 +58,43 @@ function StarRating({ count }: { count: number }) {
   );
 }
 
+// Entrance direction alternates: left → up → right
+const ENTRANCE = [
+  { x: -40, y: 20, rotateY: 12 },
+  { x: 0,   y: 50, rotateX: 16 },
+  { x: 40,  y: 20, rotateY: -12 },
+];
+
 function TestimonialCard({
   testimonial,
   index,
-  inView,
 }: {
   testimonial: Testimonial;
   index: number;
-  inView: boolean;
 }) {
+  const tilt = use3DTilt(8);
+  const glare = useMotionTemplate`radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255,255,255,0.07) 0%, transparent 60%)`;
+  const entry = ENTRANCE[index % 3];
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: index * 0.14, duration: 0.65, ease: EASE }}
-      className="group relative flex flex-col rounded-2xl border border-white/[0.06] bg-[#111] p-7 transition-colors duration-300 hover:border-white/[0.12]"
+      ref={tilt.ref}
+      initial={{ opacity: 0, x: entry.x, y: entry.y, rotateX: entry.rotateX ?? 0, rotateY: entry.rotateY ?? 0, scale: 0.94 }}
+      whileInView={{ opacity: 1, x: 0, y: 0, rotateX: 0, rotateY: 0, scale: 1 }}
+      viewport={{ once: true, margin: "0px 0px -60px 0px" }}
+      transition={{ delay: index * 0.12, duration: 0.75, ease: EASE }}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
+      style={{ rotateX: tilt.rotateX, rotateY: tilt.rotateY, transformStyle: "preserve-3d" }}
+      className="group relative flex flex-col rounded-2xl border border-white/[0.06] bg-[#111] p-7 transition-colors duration-300 hover:border-[#CC1414]/20"
     >
+      {/* Glare overlay */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-2xl z-20"
+        style={{ background: glare, opacity: tilt.glareOpacity }}
+      />
+
       {/* Red quote mark */}
       <span
         aria-hidden="true"
@@ -91,7 +113,6 @@ function TestimonialCard({
 
       {/* Author */}
       <div className="mt-7 flex items-center gap-3">
-        {/* Avatar */}
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#CC1414] text-xs font-bold uppercase tracking-wide text-white">
           {testimonial.initials}
         </div>
@@ -107,6 +128,7 @@ function TestimonialCard({
 export default function Testimonials() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  // inView still used for heading animations
 
   return (
     <section className="relative overflow-hidden bg-[#0a0a0a] py-24 sm:py-32">
@@ -138,9 +160,9 @@ export default function Testimonials() {
         </motion.h2>
 
         {/* Cards */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" style={{ perspective: "1200px" }}>
           {TESTIMONIALS.map((t, i) => (
-            <TestimonialCard key={t.name} testimonial={t} index={i} inView={inView} />
+            <TestimonialCard key={t.name} testimonial={t} index={i} />
           ))}
         </div>
       </div>

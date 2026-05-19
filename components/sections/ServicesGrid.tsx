@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView, type Variants } from "framer-motion";
+import { motion, useInView, useMotionTemplate, type Variants } from "framer-motion";
 import {
   Share2,
   Palette,
@@ -16,6 +16,7 @@ import {
   Film,
   type LucideIcon,
 } from "lucide-react";
+import { use3DTilt } from "@/hooks/use3DTilt";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -73,10 +74,11 @@ const otherServices: ServiceCard[] = [
 ];
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 48, scale: 0.96 },
+  hidden: { opacity: 0, y: 48, rotateX: 18, scale: 0.96 },
   visible: {
     opacity: 1,
     y: 0,
+    rotateX: 0,
     scale: 1,
     transition: { duration: 0.55, ease: EASE },
   },
@@ -167,8 +169,12 @@ function AnimatedTitle({
 
 function CoreServiceCard({ service, index }: { service: ServiceCard; index: number }) {
   const Icon = service.icon;
+  const tilt = use3DTilt(10);
+  const glareBackground = useMotionTemplate`radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255,255,255,0.08) 0%, transparent 60%)`;
+
   return (
     <motion.div
+      ref={tilt.ref}
       variants={cardVariants}
       initial="hidden"
       whileInView="visible"
@@ -177,8 +183,16 @@ function CoreServiceCard({ service, index }: { service: ServiceCard; index: numb
       animate="rest"
       custom={index}
       transition={{ duration: 0.55, ease: EASE, delay: (index % 3) * 0.1 }}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
       className="group relative flex flex-col gap-4 p-6 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default overflow-hidden"
-      style={{ originX: 0.5, originY: 0.5 }}
+      style={{
+        originX: 0.5,
+        originY: 0.5,
+        rotateX: tilt.rotateX,
+        rotateY: tilt.rotateY,
+        transformStyle: "preserve-3d",
+      }}
     >
       {/* Framer-motion hover for card lift + border glow */}
       <motion.div
@@ -261,6 +275,17 @@ function CoreServiceCard({ service, index }: { service: ServiceCard; index: numb
           }}
         />
       </motion.div>
+
+      {/* Glare overlay — visible only on mouse move via glareOpacity */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-xl"
+        style={{
+          background: glareBackground,
+          opacity: tilt.glareOpacity,
+          zIndex: 20,
+        }}
+      />
     </motion.div>
   );
 }
@@ -275,6 +300,7 @@ function OtherServiceCard({ service, index }: { service: ServiceCard; index: num
       viewport={{ once: true, margin: "0px 0px -60px 0px" }}
       transition={{ duration: 0.5, ease: EASE, delay: index * 0.08 }}
       className="group flex items-center gap-3 px-5 py-4 rounded-xl bg-[#111111] border border-white/[0.06] cursor-default"
+      style={{ transformStyle: "preserve-3d" }}
       whileHover={{
         borderColor: "rgba(204,20,20,0.4)",
         boxShadow: "0 0 0 1px rgba(204,20,20,0.2), 0 4px 16px rgba(204,20,20,0.08)",
@@ -337,10 +363,12 @@ export default function ServicesGrid() {
         </motion.div>
 
         {/* Core services grid — 3 columns on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-          {coreServices.map((service, i) => (
-            <CoreServiceCard key={service.title} service={service} index={i} />
-          ))}
+        <div style={{ perspective: "1000px" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+            {coreServices.map((service, i) => (
+              <CoreServiceCard key={service.title} service={service} index={i} />
+            ))}
+          </div>
         </div>
 
         {/* Other services divider label */}
@@ -358,10 +386,12 @@ export default function ServicesGrid() {
         </motion.div>
 
         {/* Other services row — up to 5 columns on large screens */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {otherServices.map((service, i) => (
-            <OtherServiceCard key={service.title} service={service} index={i} />
-          ))}
+        <div style={{ perspective: "1000px" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {otherServices.map((service, i) => (
+              <OtherServiceCard key={service.title} service={service} index={i} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

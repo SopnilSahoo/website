@@ -121,9 +121,11 @@ function StatCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 28 }}
-      animate={active ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: index * 0.12, duration: 0.65, ease: EASE }}
+      initial={{ opacity: 0, y: 40, rotateX: 22, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+      viewport={{ once: true, margin: "0px 0px -60px 0px" }}
+      transition={{ delay: index * 0.1, duration: 0.7, ease: EASE }}
+      style={{ transformStyle: "preserve-3d" }}
       className="group relative flex flex-col items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.02] px-6 py-10 text-center backdrop-blur-sm transition-colors duration-300 hover:border-[#CC1414]/30 hover:bg-white/[0.04]"
     >
       {/* Subtle top-edge glow on hover */}
@@ -221,7 +223,7 @@ export default function Stats() {
         </motion.h2>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4" style={{ perspective: "1000px" }}>
           {STATS.map((stat, i) => (
             <StatCard key={stat.label} stat={stat} index={i} active={inView} />
           ))}
