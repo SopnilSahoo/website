@@ -1,288 +1,225 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform, type Variants } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import Button from "@/components/ui/Button";
-import ParticleNetwork from "@/components/ui/ParticleNetwork";
-import GlowOrbs from "@/components/ui/GlowOrbs";
-import TextScramble from "@/components/ui/TextScramble";
-
-// ─── Animation constants ────────────────────────────────────────────────────
+import { useRef } from "react";
+import Image from "next/image";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.13,
-      duration: 0.7,
-      ease: EASE,
-    },
-  }),
-};
-
-const badgeBounce: Variants = {
-  hidden: { opacity: 0, scale: 0.6, y: -8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 480,
-      damping: 22,
-      delay: 0.05,
-    },
-  },
-};
-
-const floatAnimation = {
-  y: [0, -6, 0, 6, 0],
-  transition: {
-    duration: 6,
-    repeat: Infinity,
-    ease: "easeInOut" as const,
-  },
-};
-
-// ─── Live metric card data ───────────────────────────────────────────────────
-
-const METRICS = [
-  { stat: "↑ 340%", label: "Average Lead Growth" },
-  { stat: "↑ 12x",  label: "ROAS Achieved" },
-  { stat: "< 30 days", label: "First Results" },
-] as const;
-
-// ─── Component ───────────────────────────────────────────────────────────────
+const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  left: `${5 + ((i * 37) % 90)}%`,
+  top: `${10 + ((i * 53) % 80)}%`,
+  size: 1 + (i % 3),
+  duration: `${6 + (i % 5)}s`,
+  delay: `${(i * 0.4) % 5}s`,
+  opacity: 0.3 + (i % 3) * 0.2,
+}));
 
 export default function Hero() {
-  const [scrambleTrigger, setScrambleTrigger] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  // Fire TextScramble after 800 ms so it lands after the headline fades in
-  useEffect(() => {
-    const id = setTimeout(() => setScrambleTrigger(true), 800);
-    return () => clearTimeout(id);
-  }, []);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const contentY = useTransform(scrollYProgress, [0, 0.8], ["0%", "-12%"]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
-  // Scroll-linked parallax
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-
-  // Background layers move DOWN (slow parallax)
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
-  // Subtle scale-up on background as you scroll
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
-  // Content moves UP slightly faster than the background
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
-  // Content fades out in the first half of the scroll
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scrollTo = (id: string) => {
+    document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <section
-      ref={sectionRef}
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] px-4 pt-20"
+      ref={ref}
+      id="hero"
+      className="relative min-h-screen flex items-end overflow-hidden bg-[#06070a]"
     >
-
-      {/* ── Background layer 1: Particle network (z-0) ── */}
-      <ParticleNetwork />
-
-      {/* ── Background layer 2: Animated glow orbs (z-0) ── */}
-      <GlowOrbs />
-
-      {/* ── Parallax background layers (3, 4, 5) ── */}
+      {/* ── Background image with parallax & Ken Burns ── */}
       <motion.div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{ y: bgY, scale: bgScale }}
+        className="absolute inset-0"
+        style={{ scale: bgScale, y: bgY }}
       >
-        {/* ── Background layer 3: Red radial glow — top center ── */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            zIndex: 1,
-            background:
-              "radial-gradient(ellipse 120% 60% at 50% -5%, rgba(204,20,20,0.32) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* ── Background layer 4: Dot grid overlay ── */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            zIndex: 2,
-            backgroundImage:
-              "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-
-        {/* ── Background layer 5: Soft edge vignette + bottom fade (lighter on mobile) ── */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            zIndex: 3,
-            background: [
-              "radial-gradient(ellipse 110% 90% at 50% 50%, transparent 45%, #0a0a0a 100%)",
-              "linear-gradient(to bottom, transparent 65%, #0a0a0a 100%)",
-            ].join(", "),
-          }}
+        <Image
+          src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=90"
+          alt="Sreenivasa Sonthalia Ecorise — Luxury Residences"
+          fill
+          priority
+          className="object-cover animate-ken-burns"
+          sizes="100vw"
         />
       </motion.div>
 
+      {/* ── Cinematic gradient overlays ── */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#06070a] via-[rgba(6,7,10,0.55)] to-[rgba(6,7,10,0.2)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[rgba(6,7,10,0.6)] via-transparent to-[rgba(6,7,10,0.2)]" />
+
+      {/* ── Ambient gold glow ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(201,168,76,0.08) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* ── Particle dots ── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {PARTICLES.map((p) => (
+          <span
+            key={p.id}
+            className="particle"
+            style={{
+              left: p.left,
+              top: p.top,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              opacity: p.opacity,
+              "--duration": p.duration,
+              "--delay": p.delay,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
       {/* ── Content ── */}
-      <motion.div style={{ y: contentY, opacity: contentOpacity }}>
-        <div className="relative flex flex-col items-center text-center max-w-4xl mx-auto w-full" style={{ zIndex: 10 }}>
-
-          {/* Pre-headline agency tag */}
-          <motion.p
-            custom={0}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="mb-4 text-xs font-semibold tracking-[0.25em] uppercase"
-            style={{ color: "#CC1414" }}
-          >
-            Reach Digitally Agency
-          </motion.p>
-
-          {/* Badge */}
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative z-10 w-full pb-24 md:pb-32"
+      >
+        <div className="container-luxury">
+          {/* Eyebrow */}
           <motion.div
-            variants={badgeBounce}
-            initial="hidden"
-            animate="visible"
-            className="mb-9"
+            className="section-eyebrow mb-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 3.0, ease: EASE }}
           >
-            <span
-              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-sm text-white/75 font-medium"
-              style={{ border: "1px solid rgba(255,255,255,0.10)" }}
-            >
-              {/* Pulsing red dot */}
-              <span className="relative flex h-2 w-2 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#CC1414] opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#CC1414]" />
-              </span>
-              AI-Powered Digital Marketing
-            </span>
+            Sreenivasa Constructions · RERA: P02400010642
           </motion.div>
 
-          {/* Main headline — floats gently as a group */}
-          <motion.div animate={floatAnimation}>
+          {/* Main headline */}
+          <div className="overflow-hidden mb-3">
             <motion.h1
-              custom={1}
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight mb-6"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light leading-[1.05] tracking-wide"
+              style={{ fontFamily: "var(--font-cormorant), serif" }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, delay: 3.1, ease: EASE }}
             >
-              <span className="block text-white">We Don&apos;t Just Market</span>
-              <span className="block text-white">We Make You</span>
-              {/* Third line: TextScramble for "Unmissable." */}
-              <span
-                className="block"
-                style={{
-                  background: "linear-gradient(90deg, #ffffff 0%, #CC1414 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                <TextScramble
-                  text="Unmissable."
-                  trigger={scrambleTrigger}
-                  speed={38}
-                />
-              </span>
+              Sonthalia
             </motion.h1>
-          </motion.div>
+          </div>
 
-          {/* Subtext */}
+          <div className="overflow-hidden mb-8">
+            <motion.h1
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light leading-[1.05] tracking-wide text-gold-gradient"
+              style={{ fontFamily: "var(--font-cormorant), serif" }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, delay: 3.2, ease: EASE }}
+            >
+              Ecorise
+            </motion.h1>
+          </div>
+
+          {/* Tagline */}
           <motion.p
-            custom={2}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="text-white/50 text-lg sm:text-xl max-w-2xl leading-relaxed mb-10"
+            className="text-[#a89d90] text-lg md:text-xl max-w-xl leading-relaxed mb-10 font-light"
+            style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 3.35, ease: EASE }}
           >
-            Reach Digitally Agency helps brands dominate search, social, and
-            beyond&nbsp;&mdash; with AI-powered strategies that convert.
+            Ultra-luxury 3 & 4 BHK residences across 6.36 acres of curated elegance
+            in the heart of Rajendranagar, Hyderabad.
           </motion.p>
 
-          {/* CTA buttons */}
+          {/* CTA row */}
           <motion.div
-            custom={3}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col sm:flex-row items-center gap-4 mb-10"
+            className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 3.5, ease: EASE }}
           >
-            <Button
-              variant="primary"
-              size="lg"
-              href="/contact"
-              icon={<ArrowRight size={20} />}
+            <button
+              onClick={() => scrollTo("#inquiry")}
+              className="btn-gold text-[0.7rem] px-8 py-3.5"
+              style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
             >
-              Book a Free Strategy Call
-            </Button>
-
-            <Button variant="secondary" size="lg" href="/work">
-              View Our Work
-            </Button>
+              <span className="relative z-10">Schedule Private Tour</span>
+            </button>
+            <button
+              onClick={() => scrollTo("#residences")}
+              className="btn-gold-outline text-[0.7rem] px-8 py-3.5"
+              style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
+            >
+              Explore Residences
+            </button>
           </motion.div>
 
-          {/* Trust indicators */}
+          {/* Stats strip */}
           <motion.div
-            custom={4}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/30 font-medium tracking-wide mb-8"
+            className="flex flex-wrap gap-8 md:gap-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 3.65, ease: EASE }}
           >
-            <span>5+ Years Experience</span>
-            <span className="text-white/15 hidden sm:inline" aria-hidden="true">|</span>
-            <span>50+ Happy Clients</span>
-            <span className="text-white/15 hidden sm:inline" aria-hidden="true">|</span>
-            <span>3 Accreditations</span>
-          </motion.div>
-
-          {/* Live metric cards */}
-          <motion.div
-            custom={5}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-3 w-full max-w-sm sm:max-w-none sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-3"
-          >
-            {METRICS.map(({ stat, label }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center rounded-xl px-3 sm:px-5 py-3"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                }}
-              >
-                <span className="text-white font-bold text-base sm:text-lg leading-tight tabular-nums">
-                  {stat}
+            {[
+              { val: "3 & 4 BHK", label: "Configurations" },
+              { val: "6.36 Acres", label: "Prime Land" },
+              { val: "2790–4695", label: "sq.ft. Residences" },
+              { val: "₹7,000/sqft", label: "Starting Price" },
+            ].map(({ val, label }) => (
+              <div key={label} className="flex flex-col">
+                <span
+                  className="text-[#f5f0e8] text-xl md:text-2xl font-light"
+                  style={{ fontFamily: "var(--font-cormorant), serif" }}
+                >
+                  {val}
                 </span>
-                <span className="text-white/45 text-[10px] sm:text-xs mt-0.5 text-center">
+                <span
+                  className="text-[#5a5550] text-[0.65rem] tracking-[0.15em] uppercase mt-1"
+                  style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
+                >
                   {label}
                 </span>
               </div>
             ))}
           </motion.div>
-
         </div>
       </motion.div>
+
+      {/* ── Scroll indicator ── */}
+      <motion.button
+        onClick={() => scrollTo("#overview")}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 group"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 4, duration: 0.6 }}
+        aria-label="Scroll down"
+      >
+        <span
+          className="text-[0.6rem] tracking-[0.3em] uppercase text-[#5a5550] group-hover:text-[#c9a84c] transition-colors"
+          style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
+        >
+          Explore
+        </span>
+        <div className="w-px h-12 overflow-hidden relative">
+          <motion.div
+            className="absolute w-full bg-gradient-to-b from-transparent via-[#c9a84c] to-transparent"
+            animate={{ y: ["-100%", "200%"] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            style={{ height: "60%" }}
+          />
+        </div>
+        <motion.div
+          animate={{ y: [0, 4, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown size={14} className="text-[#c9a84c]" />
+        </motion.div>
+      </motion.button>
     </section>
   );
 }

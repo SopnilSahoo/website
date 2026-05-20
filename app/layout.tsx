@@ -1,70 +1,86 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import StickyCallButton from "@/components/ui/StickyCallButton";
+import StickyButtons from "@/components/ui/StickyButtons";
+import PageLoader from "@/components/ui/PageLoader";
+import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 
-const inter = Inter({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-cormorant",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+  variable: "--font-dm-sans",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Reach Digitally Agency | AI-Powered Digital Marketing in Bhubaneswar",
-    template: "%s | Reach Digitally Agency",
+    default: "Sreenivasa Sonthalia Ecorise | Ultra-Luxury 3 & 4 BHK in Hyderabad",
+    template: "%s | Sonthalia Ecorise",
   },
   description:
-    "Reach Digitally Agency is an AI-powered digital marketing agency in Bhubaneswar offering Social Media Marketing, SEO & AEO, Performance Marketing, Branding, and Website Development.",
+    "Experience Sreenivasa Sonthalia Ecorise — ultra-luxury 3 & 4 BHK residences in Gaganpahad, Rajendranagar, Hyderabad. 2,790–4,695 sq.ft. premium apartments on 6.36 acres. RERA: P02400010642.",
   keywords: [
-    "digital marketing agency Bhubaneswar",
-    "SEO agency Odisha",
-    "social media marketing Bhubaneswar",
-    "performance marketing agency India",
-    "branding agency Bhubaneswar",
-    "AI digital marketing",
-    "Reach Digitally Agency",
+    "Sreenivasa Sonthalia Ecorise",
+    "luxury apartments Hyderabad",
+    "3 BHK Rajendranagar",
+    "4 BHK Gaganpahad Hyderabad",
+    "Sreenivasa Constructions",
+    "premium flats Hyderabad",
+    "luxury residences Financial District",
+    "RERA P02400010642",
   ],
-  authors: [{ name: "Reach Digitally Agency" }],
-  creator: "Reach Digitally Agency",
+  authors: [{ name: "Sreenivasa Constructions" }],
+  creator: "Sreenivasa Constructions",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://reachdigitally.agency",
-    siteName: "Reach Digitally Agency",
-    title: "Reach Digitally Agency | AI-Powered Digital Marketing",
+    url: "https://sreenivasaecorise.com",
+    siteName: "Sreenivasa Sonthalia Ecorise",
+    title: "Sreenivasa Sonthalia Ecorise | Ultra-Luxury Residences in Hyderabad",
     description:
-      "AI-powered digital marketing agency in Bhubaneswar helping brands dominate search, social, and beyond.",
+      "Premium 3 & 4 BHK residences in the heart of Rajendranagar. Curated living across 6.36 acres of elegance.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reach Digitally Agency | AI-Powered Digital Marketing",
+    title: "Sreenivasa Sonthalia Ecorise | Ultra-Luxury Residences",
     description:
-      "AI-powered digital marketing agency in Bhubaneswar helping brands dominate search, social, and beyond.",
+      "Premium 3 & 4 BHK residences in Gaganpahad, Rajendranagar, Hyderabad.",
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-    },
+    googleBot: { index: true, follow: true },
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.className} h-full`}>
-      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-white">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <StickyCallButton />
+    <html
+      lang="en"
+      className={`${cormorant.variable} ${dmSans.variable} h-full`}
+    >
+      <body
+        className="min-h-full flex flex-col bg-[#06070a] text-[#f5f0e8] font-sans-body"
+        style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
+      >
+        <SmoothScrollProvider>
+          <PageLoader />
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <StickyButtons />
+        </SmoothScrollProvider>
       </body>
     </html>
   );
