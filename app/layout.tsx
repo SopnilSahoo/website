@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StickyCallButton from "@/components/ui/StickyCallButton";
+import { ConditionalNav, ConditionalMain } from "@/components/layout/ConditionalLayout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -61,10 +62,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.className} h-full`}>
       <body className="min-h-full flex flex-col bg-[#0a0a0a] text-white">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <StickyCallButton />
+        <ConditionalNav><Navbar /></ConditionalNav>
+        <ConditionalMain>{children}</ConditionalMain>
+        <ConditionalNav><Footer /></ConditionalNav>
+        <ConditionalNav><StickyCallButton /></ConditionalNav>
       </body>
     </html>
   );

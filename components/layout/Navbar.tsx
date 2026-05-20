@@ -10,6 +10,7 @@ const navLinks = [
   { label: "Services", href: "/services" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
+  { label: "AI Ad Generator ✦", href: "/ad-generator" },
 ];
 
 export default function Navbar() {
@@ -74,7 +75,11 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-white/60 hover:text-white transition-colors duration-200 tracking-wide"
+                  className={
+                    link.href === "/ad-generator"
+                      ? "text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors duration-200 tracking-wide"
+                      : "text-sm text-white/60 hover:text-white transition-colors duration-200 tracking-wide"
+                  }
                 >
                   {link.label}
                 </Link>
